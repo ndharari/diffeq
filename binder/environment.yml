@@ -1,0 +1,9 @@
+name: diffeq
+channels:
+  - conda-forge
+dependencies:
+  - numpy
+  - sympy
+  - matplotlib
+  - rise
+
