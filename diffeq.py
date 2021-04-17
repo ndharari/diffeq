@@ -37,6 +37,10 @@ A_vector = sm.Matrix([dot_x, dot_y])
 A_matrix = A_vector.jacobian(([x, y]))
 A_matrix
 # %%
+# Calculates Characteristic Polynomial
+charpoly = A_matrix.charpoly()
+charpoly 
+# %%
 # Calculates eigenvals for each eq
 # Note, each eigenval is presented as {eiganval: multiplicity}
 eigenval_list = [[eq, A_matrix.subs([(x, eq[x]), (y, eq[y])]).eigenvals()]
