@@ -1,7 +1,9 @@
 # %%
 # Bulk Imports and setup
+from IPython.display import display, Math, Latex
 import matplotlib.pyplot as plt
 import numpy as np
+
 import sympy as sm
 from sympy.utilities.lambdify import lambdify, implemented_function
 x, y, lamda = sm.symbols('x, y, lamda')
@@ -16,36 +18,42 @@ def move_sympyplot_to_axes(p, ax):
     plt.close(backend.fig)
 
 
-# %%
 # Defining the equations via sympy
-dot_x = x -y   # f(x,y)
-dot_y = -2*x+y  # g(x,y)
-# %%
-dot_x
-# %%
-dot_y
-# %%
-# Setting equations to zero and computing Fixed Points
-dot_x_Equal, dot_y_Equal = sm.Eq(dot_x, 0), sm.Eq(dot_y, 0)
-equilibria = sm.solve((dot_x_Equal, dot_y_Equal), x, y, dict=True)
-equilibria
+dot_x = x-y   # f(x,y)
+dot_y = -2*x**2+y  # g(x,y)
+display(Math('\dot{x} = '+ sm.latex(dot_x)))
+display(Math('\dot{y} = '+ sm.latex(dot_y)))
+
 # %%
 ## A matrix from dot(X)=AX (if system is linear)
 # We contruct the vector <f(x,y), g(x,y)>.
 A_vector = sm.Matrix([dot_x, dot_y])
 # Jacobian for the A_vector. In a linear system this gives the A matrix from dot(X)=AX
 A_matrix = A_vector.jacobian(([x, y]))
-A_matrix
+display(Math('\mathbf{A} = '+ sm.latex(A_matrix)))
 # %%
 # Calculates Characteristic Polynomial
-charpoly = A_matrix.charpoly()
-charpoly 
+charpoly = A_matrix.charpoly() 
+charpoly
 # %%
-# Calculates eigenvals for each eq
-# Note, each eigenval is presented as {eiganval: multiplicity}
-eigenval_list = [[eq, A_matrix.subs([(x, eq[x]), (y, eq[y])]).eigenvals()]
+# Setting equations to zero and computing Fixed Points
+dot_x_Equal, dot_y_Equal = sm.Eq(dot_x, 0), sm.Eq(dot_y, 0)
+equilibria = sm.solve((dot_x_Equal, dot_y_Equal), x, y, dict=True)
+# %%
+# Calculates eigenvals and eigenvects for each eq
+# The list is of the form [{eq}, [eigenthing1, eigenthing1]]
+# Each eigenthing is [(eigenval, multiplicity, [eigenvec]), …]
+eigen_things = [[eq, A_matrix.subs(eq).eigenvects()]
               for eq in equilibria]
-eigenval_list
+# Showing equilibrium and eigenthings
+
+for eq in equilibria:
+    display(Math("\mathrm{Equilibrium}: (" + sm.latex(eq[x])+","+sm.latex(eq[y])+")"))
+    # eigen_things[#eq][eigenthings][#pair][0=value, 1=mult, 2=eigenvect]
+    for pair in eigen_things[0][1]:
+            display(Math("\mathrm{Eigenvalue}:"+ sm.latex(pair[0]) +
+                         "\quad \mathrm{Multiplicity}=" + sm.latex(pair[1])))
+            display(Math("\mathrm{Eigenvector}: "+ sm.latex(pair[2][0])))
 # %%
 # Ploting  parameters
 fig = plt.figure(figsize=(10,8))
@@ -56,7 +64,10 @@ ax = fig.add_subplot(1,1,1)
 x_min, y_min, y_max, x_max = -2, -2, 2, 2
 # For plotting the trajectory
 time, dt = 50, 0.1
-x_0, y_0 = 0.5, 0.6 
+x_0, y_0 = 0.5, 0.6
+
+# Choose if normalization of vectors is applied
+normalize = True
 
 #################################
 # Plot fixed points
@@ -85,12 +96,18 @@ ax.plot(x_list, y_list, color="black")
 # create a grid and set the dir vecs
 X, Y = np.meshgrid(x_line, y_line)               
 x_dir, y_dir = x_movement(X,Y), y_movement(X,Y)  
-# prepare the colour
-M = (np.hypot(x_dir, y_dir))                                                   
+# prepare the colour and normalization factor
+norm = np.sqrt(x_dir**2 + y_dir**2)
+
+#Normalize
+if normalize:
+    x_dir /= norm
+    y_dir /= norm
+
 plt.quiver(X, Y, 
            x_dir, 
            y_dir,
-           M,
+           norm,
            pivot='mid')
 
 # Plot Nullclines
