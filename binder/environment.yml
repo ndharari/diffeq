@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - numpy
-  - sympy
+  - sympy==1.8
   - matplotlib
   - rise
 
